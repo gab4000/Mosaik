@@ -7,7 +7,7 @@ import dev.xernas.photon.exceptions.PhotonException;
 
 public class Main {
 	static void main() throws PhotonException {
-		PhotonAPI.init(Library.OPENGL_4_6, "Mosaic", "0.0.1", true);
+		PhotonAPI.init(Library.OPENGL_4_6, "Mosaic", "0.1.0", true);
 		
 		Window window = new Window("Mosaic", Globals.WIDTH, Globals.HEIGHT);
 		Mosaik mosaik = new Mosaik(window, new Grid(Globals.GRID_WIDTH, Globals.GRID_HEIGHT, Globals.CELL_SIZE));
