@@ -38,9 +38,11 @@ public class Grid {
 	public float getWorldHeight() {
 		return grid[0].length * (cellSize + cellSpacing);
 	}
-	
+
 	public @Nullable Cell getCellAt(int x, int y) {
-		if (x > grid.length || y > grid[0].length) return null;
+		if (x >= grid.length || y >= grid[0].length || x < 0 || y < 0) {
+			return null;
+		}
 		return grid[x][y];
 	}
 	
@@ -58,19 +60,28 @@ public class Grid {
 			this.enabled = false;
 			
 			this.division = new Border[4];
-			for (int i=0;i<4;i++) division[i] = new Border(this, i);
+			for (byte i=0;i<4;i++) division[i] = new Border(this, i);
+		}
+
+		public boolean isValid() {
+			return division[0].getColor() != division[1].getColor()
+					&& division[0].getColor() != division[2].getColor()
+					&& division[0].getColor() != division[3].getColor()
+					&& division[1].getColor() != division[2].getColor()
+					&& division[1].getColor() != division[3].getColor()
+					&& division[2].getColor() != division[3].getColor();
 		}
 		
 		@Getter
 		public static class Border {
 			private final Cell cell;
-			private final int id;
+			private final byte id;
 			@Setter
 			private boolean activated;
 			@Setter
 			private Color color;
 			
-			public Border(Cell cell, int id) {
+			public Border(Cell cell, byte id) {
 				this.cell = cell;
 				this.id = id;
 				this.activated = false;

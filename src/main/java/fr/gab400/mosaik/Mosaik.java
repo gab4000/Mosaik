@@ -130,7 +130,7 @@ public class Mosaik {
 	
 	private void input() throws PhotonException {
 		// Managing camera movement with middle mouse button
-		if (window.getInput().isPressing(Key.MOUSE_MIDDLE)) {
+		if (window.getInput().isPressing(Key.MOUSE_LEFT)) {
 			window.setCursorShape(CursorShape.HAND);
 			if (cameraStartPos == null) {
 				cameraStartPos = window.getInput().getMouse().toWorldSpace(window);
@@ -154,23 +154,31 @@ public class Mosaik {
 			cameraDeltaDir = new Vector2f(currentMousePos.mul(zoomLevel).mul(- 1));
 		}
 		// Managing cells with mouses buttons
-		if (window.getInput().isPressing(Key.MOUSE_LEFT)) {
+		else if (window.getInput().hasReleased(Key.MOUSE_LEFT)) {
 			Vector2f mouseWorldPos = getMouseCameraPos();
-			
+
 			int cellX = (int) (mouseWorldPos.x / (grid.getCellSize() + Grid.getCellSpacing()));
 			int cellY = (int) (mouseWorldPos.y / (grid.getCellSize() + Grid.getCellSpacing()));
 			Grid.Cell cell = grid.getCellAt(cellX, cellY);
 			if (cell == null) return;
-			
+
 			float x = mouseWorldPos.x / (grid.getCellSize() + Grid.getCellSpacing()) - cellX - 0.5f;
 			float y = mouseWorldPos.y / (grid.getCellSize() + Grid.getCellSpacing()) - cellY - 0.5f;
-			
+
 			Grid.Cell.Border border = getBorderAt(cell, x, y);
-			if (border == null) throw new PhotonException("Border is null!");
-			
+			if (border == null) {
+				System.err.println("Border is null!");
+				return;
+			}
+
+			/* if (!cell.isValid()) {
+				System.err.println("Cell not valid!");
+				return;
+			} */
+
 			border.setColor(this.actual);
 		}
-		if (window.getInput().isPressing(Key.MOUSE_RIGHT)) {
+		else if (window.getInput().hasReleased(Key.MOUSE_RIGHT)) {
 			Vector2f mouseWorldPos = getMouseCameraPos();
 			
 			int cellX = (int) (mouseWorldPos.x / (grid.getCellSize() + Grid.getCellSpacing()));
@@ -182,7 +190,10 @@ public class Mosaik {
 			float y = mouseWorldPos.y / (grid.getCellSize() + Grid.getCellSpacing()) - cellY - 0.5f;
 			
 			Grid.Cell.Border border = getBorderAt(cell, x, y);
-			if (border == null) throw new PhotonException("Border is null!");
+			if (border == null) {
+				System.err.println("Border is null!");
+				return;
+			}
 			
 			border.setColor(Globals.GRID_COLOR);
 		}
@@ -255,6 +266,41 @@ public class Mosaik {
 		Vector2f mousePos = window.getInput().getMouse().toWorldSpace(window);
 		mousePos.add(new Vector2f(camera.getPosition().x, camera.getPosition().y));
 		return mousePos;
+	}
+
+	private boolean areNeighbors(Grid.Cell.Border border1, Grid.Cell.Border border2) {
+		Grid.Cell.Border border1Neighbor = getNeighbor(border1);
+		Grid.Cell.Border border2Neighbor = getNeighbor(border2);
+		if (border1Neighbor == null || border2Neighbor == null) return false;
+
+		return border1Neighbor == border2 && border2Neighbor == border1;
+    }
+
+	private byte getNeighborId(Grid.Cell.Border border) {
+		return switch (border.getId()) {
+			case 0 -> 2;
+			case 1 -> 3;
+			case 2 -> 0;
+			case 3 -> 1;
+            default -> throw new IllegalStateException("Unexpected value: " + border.getId());
+        };
+	}
+
+	private @Nullable Grid.Cell.Border getNeighbor(Grid.Cell.Border border) {
+		Grid.Cell cell = border.getCell();
+		byte neighborId = getNeighborId(border);
+		Grid.Cell neighborCell = null;
+		switch (neighborId) {
+			case 0 -> neighborCell = grid.getCellAt(cell.getX(), cell.getY() + 1);
+			case 1 -> neighborCell = grid.getCellAt(cell.getX() - 1, cell.getY());
+			case 2 -> neighborCell = grid.getCellAt(cell.getX(), cell.getY() - 1);
+			case 3 -> neighborCell = grid.getCellAt(cell.getX() + 1, cell.getY());
+		}
+		if (neighborCell == null) {
+			System.err.println("Neighbor cell is null!");
+			return null;
+		}
+		return neighborCell.getDivision()[neighborId];
 	}
 	
 	private Shader getShaderFromResources() throws PhotonException {

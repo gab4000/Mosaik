@@ -3,13 +3,13 @@ package fr.gab400.mosaik;
 import java.awt.*;
 
 public class Globals {
-	public static final int WIDTH = 1920;
-	public static final int HEIGHT = 1080;
+	public static final int WIDTH = 3300;
+	public static final int HEIGHT = WIDTH * 9 / 16;
 	
-	public static final int GRID_WIDTH = 5;
-	public static final int GRID_HEIGHT = 5;
+	public static final int GRID_WIDTH = 8;
+	public static final int GRID_HEIGHT = 3;
 	
-	public static final float CELL_SIZE = 0.1f;
+	public static final float CELL_SIZE = 0.3f;
 	public static final float CELL_SPACING = 0.005f;
 	
 	public static final float ZOOM_LEVEL = 0.01f;
