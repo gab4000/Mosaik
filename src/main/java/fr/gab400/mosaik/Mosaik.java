@@ -171,10 +171,18 @@ public class Mosaik {
 				System.err.println("Border is null!");
 				return;
 			}
-
+			
 			if (cell.isNotValid(border.withColor(this.actual).withActivated(true))) {
 				System.err.println("Cell not valid!");
 				return;
+			}
+			Grid.Cell.Border neighbor = getNeighbor(border);
+			if (neighbor != null) {
+				if (neighbor.getCell().isNotValid(neighbor.withColor(this.actual).withActivated(true))) {
+					System.err.println("Neighbor cell not valid!");
+					return;
+				}
+				neighbor.applyColor().applyActivated();
 			}
 			border.applyColor().applyActivated();
 		}
@@ -198,6 +206,14 @@ public class Mosaik {
 			if (cell.isNotValid(border.withColor(Globals.GRID_COLOR).withActivated(false))) {
 				System.err.println("Cell not valid!");
 				return;
+			}
+			Grid.Cell.Border neighbor = getNeighbor(border);
+			if (neighbor != null) {
+				if (neighbor.getCell().isNotValid(neighbor.withColor(Globals.GRID_COLOR).withActivated(false))) {
+					System.err.println("Neighbor cell not valid!");
+					return;
+				}
+				neighbor.applyColor().applyActivated();
 			}
 			border.applyColor().applyActivated();
 		}
@@ -280,7 +296,10 @@ public class Mosaik {
 	private boolean areNeighbors(Grid.Cell.Border border1, Grid.Cell.Border border2) {
 		Grid.Cell.Border border1Neighbor = getNeighbor(border1);
 		Grid.Cell.Border border2Neighbor = getNeighbor(border2);
-		if (border1Neighbor == null || border2Neighbor == null) return false;
+		if (border1Neighbor == null || border2Neighbor == null) {
+			System.err.println("One of neighbors is null!");
+			return false;
+		}
 
 		return border1Neighbor == border2 && border2Neighbor == border1;
     }
@@ -300,13 +319,12 @@ public class Mosaik {
 		byte neighborId = getNeighborId(border);
 		Grid.Cell neighborCell = null;
 		switch (neighborId) {
-			case 0 -> neighborCell = grid.getCellAt(cell.getX(), cell.getY() + 1);
-			case 1 -> neighborCell = grid.getCellAt(cell.getX() - 1, cell.getY());
-			case 2 -> neighborCell = grid.getCellAt(cell.getX(), cell.getY() - 1);
-			case 3 -> neighborCell = grid.getCellAt(cell.getX() + 1, cell.getY());
+			case 0 -> neighborCell = grid.getCellAt(cell.getX(), cell.getY() - 1);
+			case 1 -> neighborCell = grid.getCellAt(cell.getX() + 1, cell.getY());
+			case 2 -> neighborCell = grid.getCellAt(cell.getX(), cell.getY() + 1);
+			case 3 -> neighborCell = grid.getCellAt(cell.getX() - 1, cell.getY());
 		}
 		if (neighborCell == null) {
-			System.err.println("Neighbor cell is null!");
 			return null;
 		}
 		return neighborCell.getDivision()[neighborId];
