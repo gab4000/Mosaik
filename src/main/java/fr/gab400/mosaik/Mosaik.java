@@ -15,8 +15,9 @@ import dev.xernas.photon.api.window.cursor.CursorShape;
 import dev.xernas.photon.api.window.input.Key;
 import dev.xernas.photon.exceptions.PhotonException;
 import dev.xernas.photon.utils.MatrixUtils;
-import dev.xernas.photon.utils.Models;
 import dev.xernas.photon.utils.ShaderResource;
+import fr.gab400.mosaik.models.CursorModel;
+import fr.gab400.mosaik.models.TriangleModel;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -82,7 +83,7 @@ public class Mosaik {
 			renderer.render(shader, cursorMesh, () -> {
 				shader.setUniform("projectionMatrix", MatrixUtils.createOrthoMatrix(window));
 				Vector3f position = new Vector3f(
-						getMousePos().add(0.05f, -0.05f),
+						getMousePos().add(0.04f, -0.04f),
 						0f
 				);
 				shader.setUniform("modelMatrix", MatrixUtils.createTransformationMatrix(new Transform(position).scale(0.025f)));
@@ -171,12 +172,11 @@ public class Mosaik {
 				return;
 			}
 
-			/* if (!cell.isValid()) {
+			if (cell.isNotValid(border.withColor(this.actual).withActivated(true))) {
 				System.err.println("Cell not valid!");
 				return;
-			} */
-
-			border.setColor(this.actual);
+			}
+			border.applyColor().applyActivated();
 		}
 		else if (window.getInput().hasReleased(Key.MOUSE_RIGHT)) {
 			Vector2f mouseWorldPos = getMouseCameraPos();
@@ -195,7 +195,15 @@ public class Mosaik {
 				return;
 			}
 			
-			border.setColor(Globals.GRID_COLOR);
+			if (cell.isNotValid(border.withColor(Globals.GRID_COLOR).withActivated(false))) {
+				System.err.println("Cell not valid!");
+				return;
+			}
+			border.applyColor().applyActivated();
+		}
+		
+		if (window.getInput().hasReleased(Key.KEY_ESCAPE)) {
+			running = false;
 		}
 		
 		if (window.getInput().hasReleased(Key.KEY_ARROW_UP)) {
@@ -218,12 +226,13 @@ public class Mosaik {
 		
 		Shader gameShader = getShaderFromResources();
 		Model borderModel = new TriangleModel();
-		Model cursorModel = Models.createQuad();
+		Model cursorModel = new CursorModel();
 		shader = renderer.loadShader(gameShader);
 		borderMesh = renderer.loadMesh(borderModel);
 		cursorMesh = renderer.loadMesh(cursorModel);
 		
 		window.show();
+		window.hideCursor();
 		running = true;
 	}
 	

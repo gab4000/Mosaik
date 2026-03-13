@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Grid {
@@ -60,32 +61,60 @@ public class Grid {
 			this.enabled = false;
 			
 			this.division = new Border[4];
-			for (byte i=0;i<4;i++) division[i] = new Border(this, i);
+			for (byte i=0;i<division.length;i++) division[i] = new Border(this, i);
 		}
 
-		public boolean isValid() {
-			return division[0].getColor() != division[1].getColor()
-					&& division[0].getColor() != division[2].getColor()
-					&& division[0].getColor() != division[3].getColor()
-					&& division[1].getColor() != division[2].getColor()
-					&& division[1].getColor() != division[3].getColor()
-					&& division[2].getColor() != division[3].getColor();
+		public boolean isNotValid(Border changed) {
+			return changed.isOActivated()
+					&& Arrays.stream(getDivision()).filter(border -> border.getId() != changed.getId())
+					.anyMatch(border -> border.getColor() == changed.getOColor());
 		}
 		
 		@Getter
 		public static class Border {
 			private final Cell cell;
 			private final byte id;
-			@Setter
 			private boolean activated;
-			@Setter
 			private Color color;
+			
+			private Color oColor;
+			private boolean oActivated;
 			
 			public Border(Cell cell, byte id) {
 				this.cell = cell;
 				this.id = id;
 				this.activated = false;
 				this.color = Globals.GRID_COLOR;
+			}
+			
+			public Border withColor(Color color) {
+				this.oColor = color;
+				return this;
+			}
+			
+			public Border color(Color color) {
+				this.color = color;
+				return this;
+			}
+			
+			public Border applyColor() {
+				this.color = oColor;
+				return this;
+			}
+			
+			public Border withActivated(boolean activated) {
+				this.oActivated = activated;
+				return this;
+			}
+			
+			public Border activated(boolean activated) {
+				this.activated = activated;
+				return this;
+			}
+			
+			public Border applyActivated() {
+				this.activated = oActivated;
+				return this;
 			}
 		}
 	}

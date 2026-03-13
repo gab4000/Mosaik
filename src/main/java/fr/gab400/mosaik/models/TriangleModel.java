@@ -1,4 +1,4 @@
-package fr.gab400.mosaik;
+package fr.gab400.mosaik.models;
 
 import dev.xernas.photon.api.model.Model;
 
