@@ -3,6 +3,7 @@ package fr.gab400.mosaik;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2f;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -45,6 +46,150 @@ public class Grid {
 			return null;
 		}
 		return grid[x][y];
+	}
+
+	public boolean areNeighbors(Cell.Border border1, Cell.Border border2) {
+		Cell.Border border1Neighbor = getNeighbor(border1);
+		Cell.Border border2Neighbor = getNeighbor(border2);
+		if (border1Neighbor == null || border2Neighbor == null) {
+			System.err.println("One of neighbors is null!");
+			return false;
+		}
+
+		return border1Neighbor == border2 && border2Neighbor == border1;
+	}
+
+	public @Nullable Grid.Cell.Border getNeighbor(Cell.Border border) {
+		Cell cell = border.getCell();
+		byte neighborId = getNeighborId(border);
+		Cell neighborCell = null;
+		switch (neighborId) {
+			case 0 -> neighborCell = getCellAt(cell.getX(), cell.getY() - 1);
+			case 1 -> neighborCell = getCellAt(cell.getX() + 1, cell.getY());
+			case 2 -> neighborCell = getCellAt(cell.getX(), cell.getY() + 1);
+			case 3 -> neighborCell = getCellAt(cell.getX() - 1, cell.getY());
+		}
+		if (neighborCell == null) {
+			return null;
+		}
+		return neighborCell.getDivision()[neighborId];
+	}
+
+	public byte getNeighborId(Cell.Border border) {
+		return switch (border.getId()) {
+			case 0 -> 2;
+			case 1 -> 3;
+			case 2 -> 0;
+			case 3 -> 1;
+			default -> throw new IllegalStateException("Unexpected value: " + border.getId());
+		};
+	}
+
+	public Cell.Border[] getLineOrColumn(Cell.Border border) {
+		List<Cell> cells = new ArrayList<>();
+		switch (border.getId()) {
+			case 0, 2 -> {
+				for (int i=0;i< grid.length;i++) {
+					cells.add(getCellAt(i, border.getCell().getY()));
+				}
+			}
+			case 1, 3 -> {
+				for (int i=0;i< grid[0].length;i++) {
+					cells.add(getCellAt(border.getCell().getX(), i));
+				}
+			}
+            default -> throw new IllegalStateException("Unexpected value: " + border.getId());
+        }
+		
+		Cell.Border[] borders = new Cell.Border[cells.size()];
+		for (Cell cell : cells) {
+			borders[cells.indexOf(cell)] = cell.getDivision()[border.getId()];
+		}
+		return borders;
+	}
+
+	public void enableCell(Vector2f mouseWorldPos, Color color) {
+		int cellX = (int) (mouseWorldPos.x / (getCellSize() + Grid.getCellSpacing()));
+		int cellY = (int) (mouseWorldPos.y / (getCellSize() + Grid.getCellSpacing()));
+		Grid.Cell cell = getCellAt(cellX, cellY);
+		if (cell == null) return;
+
+		float x = mouseWorldPos.x / (getCellSize() + Grid.getCellSpacing()) - cellX - 0.5f;
+		float y = mouseWorldPos.y / (getCellSize() + Grid.getCellSpacing()) - cellY - 0.5f;
+
+		Grid.Cell.Border border = Utils.getBorderAt(cell, x, y);
+		if (border == null) {
+			System.err.println("Border is null!");
+			return;
+		}
+
+		if (cell.isNotValid(border.withColor(color).withActivated(true))) {
+			System.err.println("Cell not valid!");
+			return;
+		}
+		Grid.Cell.Border neighbor = getNeighbor(border);
+		if (neighbor != null) {
+			if (neighbor.getCell().isNotValid(neighbor.withColor(color).withActivated(true))) {
+				System.err.println("Neighbor cell not valid!");
+				return;
+			}
+			neighbor.applyColor().applyActivated();
+		} else {
+			Grid.Cell.Border[] line = getLineOrColumn(border);
+			for (Grid.Cell.Border border1 : line) {
+				if (border1.getCell().isNotValid(border1.withColor(color).withActivated(true))) {
+					System.err.println("Line " + border1.getCell().getX() + " " + border1.getCell().getY() + " cell not valid!");
+					return;
+				}
+			}
+			for (Grid.Cell.Border border1 : line) {
+				border1.applyColor().applyActivated();
+			}
+			return;
+		}
+		border.applyColor().applyActivated();
+	}
+
+	public void disableCell(Vector2f mouseWorldPos) {
+		int cellX = (int) (mouseWorldPos.x / (getCellSize() + Grid.getCellSpacing()));
+		int cellY = (int) (mouseWorldPos.y / (getCellSize() + Grid.getCellSpacing()));
+		Grid.Cell cell = getCellAt(cellX, cellY);
+		if (cell == null) return;
+
+		float x = mouseWorldPos.x / (getCellSize() + Grid.getCellSpacing()) - cellX - 0.5f;
+		float y = mouseWorldPos.y / (getCellSize() + Grid.getCellSpacing()) - cellY - 0.5f;
+
+		Grid.Cell.Border border = Utils.getBorderAt(cell, x, y);
+		if (border == null) {
+			System.err.println("Border is null!");
+			return;
+		}
+
+		if (cell.isNotValid(border.withColor(Globals.GRID_COLOR).withActivated(false))) {
+			System.err.println("Cell not valid!");
+			return;
+		}
+		Grid.Cell.Border neighbor = getNeighbor(border);
+		if (neighbor != null) {
+			if (neighbor.getCell().isNotValid(neighbor.withColor(Globals.GRID_COLOR).withActivated(false))) {
+				System.err.println("Neighbor cell not valid!");
+				return;
+			}
+			neighbor.applyColor().applyActivated();
+		} else {
+			Grid.Cell.Border[] line = getLineOrColumn(border);
+			for (Grid.Cell.Border border1 : line) {
+				if (border1.getCell().isNotValid(border1.withColor(Globals.GRID_COLOR).withActivated(false))) {
+					System.err.println("Line " + border1.getCell().getX() + " " + border1.getCell().getY() + " cell not valid!");
+					return;
+				}
+			}
+			for (Grid.Cell.Border border1 : line) {
+				border1.applyColor().applyActivated();
+			}
+			return;
+		}
+		border.applyColor().applyActivated();
 	}
 	
 	@Getter

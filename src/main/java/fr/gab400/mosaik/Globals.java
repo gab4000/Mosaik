@@ -6,7 +6,7 @@ public class Globals {
 	public static final int WIDTH = 1920;
 	public static final int HEIGHT = WIDTH * 9 / 16;
 	
-	public static final int GRID_WIDTH = 8;
+	public static final int GRID_WIDTH = 3;
 	public static final int GRID_HEIGHT = 3;
 	
 	public static final float CELL_SIZE = 0.3f;
