@@ -80,38 +80,7 @@ public class Mosaik {
 		window.getInput().resetScrollDelta();
 
 		// Rendering
-		renderer.clear(Globals.BACK_COLOR);
-		renderer.render(shader, cursorMesh, () -> {
-			shader.setUniform("projectionMatrix", MatrixUtils.createOrthoMatrix(window));
-			Vector3f position = new Vector3f(
-					getMousePos().add(0.04f, -0.04f),
-					0f
-			);
-			shader.setUniform("modelMatrix", MatrixUtils.createTransformationMatrix(new Transform(position).scale(0.025f)));
-			shader.setUniform("viewMatrix", MatrixUtils.create2DViewMatrix(camera));
-			shader.setUniform("color", this.actual);
-		});
-		List<Grid.Cell> cells = grid.getCells();
-		for (Grid.Cell cell : cells) {
-			for (Grid.Cell.Border border : cell.getDivision()) {
-				renderer.render(shader, borderMesh, () -> {
-					shader.setUniform("projectionMatrix", MatrixUtils.createOrthoMatrix(window));
-					Vector3f position = new Vector3f(
-							border.getCell().getX() * (grid.getCellSize() + Grid.getCellSpacing()) - grid.getWorldWidth() / 2,
-							border.getCell().getY() * (grid.getCellSize() + Grid.getCellSpacing()) - grid.getWorldHeight() / 2,
-							0f
-					);
-					Vector3f rotation = new Vector3f(
-							0,
-							0,
-							border.getId() * 90
-					);
-					shader.setUniform("modelMatrix", MatrixUtils.createTransformationMatrix(new Transform(position, rotation).scale(grid.getCellSize())));
-					shader.setUniform("viewMatrix", MatrixUtils.create2DViewMatrix(camera));
-					shader.setUniform("color", border.getColor());
-				});
-			}
-		}
+		render();
 
 		if (fpsTimer >= 1f) {
 			fps = frameCount / fpsTimer;
@@ -196,6 +165,43 @@ public class Mosaik {
 	private void clean() throws PhotonException {
 		renderer.dispose();
 		window.dispose();
+	}
+	
+	private void render() throws PhotonException {
+		renderer.clear(Globals.BACK_COLOR);
+		
+		renderer.render(shader, cursorMesh, () -> {
+			shader.setUniform("projectionMatrix", MatrixUtils.createOrthoMatrix(window));
+			Vector3f position = new Vector3f(
+					getMousePos().add(0.04f, -0.04f),
+					0f
+			);
+			shader.setUniform("modelMatrix", MatrixUtils.createTransformationMatrix(new Transform(position).scale(0.025f)));
+			shader.setUniform("viewMatrix", MatrixUtils.create2DViewMatrix(camera));
+			shader.setUniform("color", this.actual);
+		});
+		
+		List<Grid.Cell> cells = grid.getCells();
+		for (Grid.Cell cell : cells) {
+			for (Grid.Cell.Border border : cell.getDivision()) {
+				renderer.render(shader, borderMesh, () -> {
+					shader.setUniform("projectionMatrix", MatrixUtils.createOrthoMatrix(window));
+					Vector3f position = new Vector3f(
+							border.getCell().getX() * (grid.getCellSize() + Grid.getCellSpacing()) - grid.getWorldWidth() / 2,
+							border.getCell().getY() * (grid.getCellSize() + Grid.getCellSpacing()) - grid.getWorldHeight() / 2,
+							0f
+					);
+					Vector3f rotation = new Vector3f(
+							0,
+							0,
+							border.getId() * 90
+					);
+					shader.setUniform("modelMatrix", MatrixUtils.createTransformationMatrix(new Transform(position, rotation).scale(grid.getCellSize())));
+					shader.setUniform("viewMatrix", MatrixUtils.create2DViewMatrix(camera));
+					shader.setUniform("color", border.getColor());
+				});
+			}
+		}
 	}
 	
 	private Vector2f getMouseCameraPos() {
