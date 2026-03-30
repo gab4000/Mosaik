@@ -1,4 +1,4 @@
-package fr.gab400.mosaik;
+package fr.gab400.mosaik.grid;
 
 import dev.xernas.photon.PhotonAPI;
 import dev.xernas.photon.api.IRenderer;
@@ -14,6 +14,7 @@ import dev.xernas.photon.api.window.cursor.CursorShape;
 import dev.xernas.photon.api.window.input.Key;
 import dev.xernas.photon.exceptions.PhotonException;
 import dev.xernas.photon.utils.MatrixUtils;
+import fr.gab400.mosaik.Globals;
 import fr.gab400.mosaik.models.CursorModel;
 import fr.gab400.mosaik.models.TriangleModel;
 import org.joml.Vector2f;
@@ -173,7 +174,7 @@ public class Mosaik {
 		renderer.render(shader, cursorMesh, () -> {
 			shader.setUniform("projectionMatrix", MatrixUtils.createOrthoMatrix(window));
 			Vector3f position = new Vector3f(
-					getMousePos().add(0.04f, -0.04f),
+					getMousePos().add(0.02f, -0.04f),
 					0f
 			);
 			shader.setUniform("modelMatrix", MatrixUtils.createTransformationMatrix(new Transform(position).scale(0.025f)));

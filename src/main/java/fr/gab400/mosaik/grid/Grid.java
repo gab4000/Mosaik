@@ -1,5 +1,6 @@
-package fr.gab400.mosaik;
+package fr.gab400.mosaik.grid;
 
+import fr.gab400.mosaik.Globals;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Grid {
+public class Grid implements Cloneable {
 	
 	private final Cell[][] grid;
 	@Getter
@@ -191,8 +192,17 @@ public class Grid {
 		}
 		border.applyColor().applyActivated();
 	}
-	
-	@Getter
+
+    @Override
+    public Grid clone() {
+        try {
+            return (Grid) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
+
+    @Getter
 	@Setter
 	public static class Cell {
 		private final int x;

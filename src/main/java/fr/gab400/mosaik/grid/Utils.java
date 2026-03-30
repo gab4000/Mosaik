@@ -1,4 +1,4 @@
-package fr.gab400.mosaik;
+package fr.gab400.mosaik.grid;
 
 import dev.xernas.microscope.helper.PathHelper;
 import dev.xernas.photon.api.shader.Shader;

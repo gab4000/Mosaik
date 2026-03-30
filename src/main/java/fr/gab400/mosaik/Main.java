@@ -4,6 +4,8 @@ import dev.xernas.photon.Library;
 import dev.xernas.photon.PhotonAPI;
 import dev.xernas.photon.api.window.Window;
 import dev.xernas.photon.exceptions.PhotonException;
+import fr.gab400.mosaik.grid.Grid;
+import fr.gab400.mosaik.grid.Mosaik;
 
 public class Main {
 	static void main() throws PhotonException {
