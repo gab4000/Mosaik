@@ -117,17 +117,23 @@ public class Grid implements Cloneable {
 
 		float x = mouseWorldPos.x / (getCellSize() + Grid.getCellSpacing()) - cellX - 0.5f;
 		float y = mouseWorldPos.y / (getCellSize() + Grid.getCellSpacing()) - cellY - 0.5f;
-
+		
 		Grid.Cell.Border border = Utils.getBorderAt(cell, x, y);
 		if (border == null) {
 			System.err.println("Border is null!");
 			return;
 		}
-
+		
+		if (!Globals.VERIFICATION) {
+			border.color(color).activated(true);
+			return;
+		}
+		
 		if (cell.isNotValid(border.withColor(color).withActivated(true))) {
 			System.err.println("Cell not valid!");
 			return;
 		}
+		
 		Grid.Cell.Border neighbor = getNeighbor(border);
 		if (neighbor != null) {
 			if (neighbor.getCell().isNotValid(neighbor.withColor(color).withActivated(true))) {
@@ -163,6 +169,11 @@ public class Grid implements Cloneable {
 		Grid.Cell.Border border = Utils.getBorderAt(cell, x, y);
 		if (border == null) {
 			System.err.println("Border is null!");
+			return;
+		}
+		
+		if (!Globals.VERIFICATION) {
+			border.color(Globals.GRID_COLOR).activated(false);
 			return;
 		}
 

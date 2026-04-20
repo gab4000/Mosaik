@@ -10,7 +10,7 @@ public class Globals {
 	public static final int GRID_HEIGHT = 3;
 	
 	public static final float CELL_SIZE = 0.3f;
-	public static final float CELL_SPACING = 0.005f;
+	public static final float CELL_SPACING = 0.01f;
 	
 	public static final float ZOOM_LEVEL = 0.01f;
 	
@@ -20,4 +20,6 @@ public class Globals {
 	public static final Color GREEN_COLOR = Color.GREEN;
 	public static final Color YELLOW_COLOR = Color.YELLOW;
 	public static final Color RED_COLOR = Color.RED;
+	
+	public static final boolean VERIFICATION = true;
 }
