@@ -35,8 +35,8 @@ public class Utils {
 
     public static Shader getShaderFromResources() throws PhotonException {
         try {
-            Path vertexShaderPath = PathHelper.getResourcePath("shaders/game.vert");
-            Path fragmentShaderPath = PathHelper.getResourcePath("shaders/game.frag");
+            Path vertexShaderPath = PathHelper.getResourcePath("shaders/shader.vert");
+            Path fragmentShaderPath = PathHelper.getResourcePath("shaders/shader.frag");
             String vertexSource = PathHelper.getStringOf(vertexShaderPath);
             String fragmentSource = PathHelper.getStringOf(fragmentShaderPath);
             ShaderResource vertexResource = new ShaderResource(vertexShaderPath.getFileName().toString(), vertexSource);

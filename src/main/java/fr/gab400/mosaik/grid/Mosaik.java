@@ -98,7 +98,7 @@ public class Mosaik {
 	
 	private void input() throws PhotonException {
 		// Managing camera movement with middle mouse button
-		if (window.getInput().isPressing(Key.MOUSE_LEFT)) {
+		if (window.getInput().isPressing(Key.MOUSE_MIDDLE)) {
 			window.setCursorShape(CursorShape.HAND);
 			if (cameraStartPos == null) {
 				cameraStartPos = window.getInput().getMouse().toWorldSpace(window);
@@ -188,8 +188,8 @@ public class Mosaik {
 				renderer.render(shader, borderMesh, () -> {
 					shader.setUniform("projectionMatrix", MatrixUtils.createOrthoMatrix(window));
 					Vector3f position = new Vector3f(
-							border.getCell().getX() * (grid.getCellSize() + Grid.getCellSpacing()) - grid.getWorldWidth() / 2,
-							border.getCell().getY() * (grid.getCellSize() + Grid.getCellSpacing()) - grid.getWorldHeight() / 2,
+							border.getCell().getX() * (grid.getCellSize() + Globals.CELL_SPACING) - grid.getWorldWidth() / 2,
+							border.getCell().getY() * (grid.getCellSize() + Globals.CELL_SPACING) - grid.getWorldHeight() / 2,
 							0f
 					);
 					Vector3f rotation = new Vector3f(
@@ -209,7 +209,7 @@ public class Mosaik {
 		// Get mouse position in world space CONSIDERING CAMERA POSITION
 		Vector2f mousePos = window.getInput().getMouse().toWorldSpace(window);
 		mousePos.add(new Vector2f(camera.getPosition().x, camera.getPosition().y));
-		mousePos.add(new Vector2f((grid.getWorldWidth() + grid.getCellSize() + Grid.getCellSpacing()) / 2, (grid.getWorldHeight() + grid.getCellSize() + Grid.getCellSpacing()) / 2));
+		mousePos.add(new Vector2f((grid.getWorldWidth() + grid.getCellSize() + Globals.CELL_SPACING) / 2, (grid.getWorldHeight() + grid.getCellSize() + Globals.CELL_SPACING) / 2));
 		return mousePos;
 	}
 	

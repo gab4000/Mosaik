@@ -1,8 +1,6 @@
 package fr.gab400.mosaik.grid;
 
 import fr.gab400.mosaik.Globals;
-import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
@@ -14,12 +12,7 @@ import java.util.List;
 public class Grid implements Cloneable {
 	
 	private final Cell[][] grid;
-	@Getter
 	private final List<Cell> cells = new ArrayList<>();
-	@Getter
-	private static final float cellSpacing = Globals.CELL_SPACING;
-	@Getter
-	@Setter
 	private float cellSize;
 	
 	public Grid(int sizeX, int sizeY, float cellSize) {
@@ -35,11 +28,11 @@ public class Grid implements Cloneable {
 	}
 	
 	public float getWorldWidth() {
-		return grid.length * (cellSize + cellSpacing);
+		return grid.length * (cellSize + Globals.CELL_SPACING);
 	}
 	
 	public float getWorldHeight() {
-		return grid[0].length * (cellSize + cellSpacing);
+		return grid[0].length * (cellSize + Globals.CELL_SPACING);
 	}
 
 	public @Nullable Cell getCellAt(int x, int y) {
@@ -110,13 +103,13 @@ public class Grid implements Cloneable {
 	}
 
 	public void enableCell(Vector2f mouseWorldPos, Color color) {
-		int cellX = (int) (mouseWorldPos.x / (getCellSize() + Grid.getCellSpacing()));
-		int cellY = (int) (mouseWorldPos.y / (getCellSize() + Grid.getCellSpacing()));
+		int cellX = (int) (mouseWorldPos.x / (getCellSize() + Globals.CELL_SPACING));
+		int cellY = (int) (mouseWorldPos.y / (getCellSize() + Globals.CELL_SPACING));
 		Grid.Cell cell = getCellAt(cellX, cellY);
 		if (cell == null) return;
 
-		float x = mouseWorldPos.x / (getCellSize() + Grid.getCellSpacing()) - cellX - 0.5f;
-		float y = mouseWorldPos.y / (getCellSize() + Grid.getCellSpacing()) - cellY - 0.5f;
+		float x = mouseWorldPos.x / (getCellSize() + Globals.CELL_SPACING) - cellX - 0.5f;
+		float y = mouseWorldPos.y / (getCellSize() + Globals.CELL_SPACING) - cellY - 0.5f;
 		
 		Grid.Cell.Border border = Utils.getBorderAt(cell, x, y);
 		if (border == null) {
@@ -158,13 +151,13 @@ public class Grid implements Cloneable {
 	}
 
 	public void disableCell(Vector2f mouseWorldPos) {
-		int cellX = (int) (mouseWorldPos.x / (getCellSize() + Grid.getCellSpacing()));
-		int cellY = (int) (mouseWorldPos.y / (getCellSize() + Grid.getCellSpacing()));
+		int cellX = (int) (mouseWorldPos.x / (getCellSize() + Globals.CELL_SPACING));
+		int cellY = (int) (mouseWorldPos.y / (getCellSize() + Globals.CELL_SPACING));
 		Grid.Cell cell = getCellAt(cellX, cellY);
 		if (cell == null) return;
 
-		float x = mouseWorldPos.x / (getCellSize() + Grid.getCellSpacing()) - cellX - 0.5f;
-		float y = mouseWorldPos.y / (getCellSize() + Grid.getCellSpacing()) - cellY - 0.5f;
+		float x = mouseWorldPos.x / (getCellSize() + Globals.CELL_SPACING) - cellX - 0.5f;
+		float y = mouseWorldPos.y / (getCellSize() + Globals.CELL_SPACING) - cellY - 0.5f;
 
 		Grid.Cell.Border border = Utils.getBorderAt(cell, x, y);
 		if (border == null) {
@@ -203,8 +196,22 @@ public class Grid implements Cloneable {
 		}
 		border.applyColor().applyActivated();
 	}
-
-    @Override
+	
+	
+	
+	public List<Cell> getCells() {
+		return cells;
+	}
+	
+	public float getCellSize() {
+		return cellSize;
+	}
+	
+	public void setCellSize(float cellSize) {
+		this.cellSize = cellSize;
+	}
+	
+	@Override
     public Grid clone() {
         try {
             return (Grid) super.clone();
@@ -212,19 +219,15 @@ public class Grid implements Cloneable {
             throw new AssertionError();
         }
     }
-
-    @Getter
-	@Setter
-	public static class Cell {
+	
+	public class Cell {
 		private final int x;
 		private final int y;
-		private boolean enabled;
 		private final Border[] division;
 		
 		public Cell(int x, int y) {
 			this.x = x;
 			this.y = y;
-			this.enabled = false;
 			
 			this.division = new Border[4];
 			for (byte i=0;i<division.length;i++) division[i] = new Border(this, i);
@@ -236,8 +239,19 @@ public class Grid implements Cloneable {
 					.anyMatch(border -> border.getColor() == changed.getOColor());
 		}
 		
-		@Getter
-		public static class Border {
+		public int getX() {
+			return x;
+		}
+		
+		public int getY() {
+			return y;
+		}
+		
+		public Border[] getDivision() {
+			return division;
+		}
+		
+		public class Border {
 			private final Cell cell;
 			private final byte id;
 			private boolean activated;
@@ -281,6 +295,26 @@ public class Grid implements Cloneable {
 			public Border applyActivated() {
 				this.activated = oActivated;
 				return this;
+			}
+			
+			public Cell getCell() {
+				return cell;
+			}
+			
+			public byte getId() {
+				return id;
+			}
+			
+			public Color getColor() {
+				return color;
+			}
+			
+			public Color getOColor() {
+				return oColor;
+			}
+			
+			public boolean isOActivated() {
+				return oActivated;
 			}
 		}
 	}
