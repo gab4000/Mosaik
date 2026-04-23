@@ -38,6 +38,7 @@ public class Mosaik {
 	private Color actual;
 	
 	private final Grid grid;
+	private PossibilityCalculator calculator;   // ← Ajouté
 
 	private int frameCount = 0;
 	private float fpsTimer = 0f;
@@ -51,6 +52,9 @@ public class Mosaik {
 		this.cameraDeltaDir = new Vector2f();
 		this.zoomLevel = grid.getCellSize();
 		this.actual = Color.BLUE;
+		
+		// Initialisation du calculateur de possibilités
+		this.calculator = new PossibilityCalculator(grid);
 	}
 	
 	public void run() throws PhotonException {
@@ -88,7 +92,6 @@ public class Mosaik {
 			frameCount = 0;
 		}
 
-		// Time measurements
 		frameCount++;
 		long endTime = System.nanoTime();
 		long frameTime = endTime - startTime;
@@ -96,7 +99,8 @@ public class Mosaik {
 	}
 	
 	private void input() throws PhotonException {
-		// Managing camera movement with middle mouse button
+
+		// Déplacement caméra (clic gauche maintenu)
 		if (window.getInput().isPressing(Key.MOUSE_LEFT)) {
 			window.setCursorShape(CursorShape.HAND);
 			if (cameraStartPos == null) {
@@ -110,7 +114,8 @@ public class Mosaik {
 			window.setCursorShape(CursorShape.ARROW);
 			cameraStartPos = null;
 		}
-		// Managing zoom with mouse scroll
+
+		// Zoom avec molette
 		if (window.getInput().getMouse().hasScrolled()) {
 			float scrollAmount = window.getInput().getMouse().getScroll();
 			zoomLevel += scrollAmount * Globals.ZOOM_LEVEL;
@@ -118,32 +123,43 @@ public class Mosaik {
 			grid.setCellSize(zoomLevel);
 			
 			Vector2f currentMousePos = window.getInput().getMouse().toWorldSpace(window);
-			cameraDeltaDir = new Vector2f(currentMousePos.mul(zoomLevel).mul(- 1));
+			cameraDeltaDir = new Vector2f(currentMousePos.mul(zoomLevel).mul(-1));
 		}
-		// Managing cells with mouses buttons
+		// Clic gauche = activer bordure
 		else if (window.getInput().hasReleased(Key.MOUSE_LEFT)) {
 			grid.enableCell(getMouseCameraPos(), this.actual);
 		}
+		// Clic droit = désactiver bordure
 		else if (window.getInput().hasReleased(Key.MOUSE_RIGHT)) {
 			grid.disableCell(getMouseCameraPos());
+		}
+		
+		// === NOUVELLE FONCTIONNALITÉ : Calcul des possibilités ===
+		if (window.getInput().hasReleased(Key.KEY_P)) {
+			System.out.println("\n🔄 Calcul du nombre maximal de possibilités en cours...");
+
+			long start = System.currentTimeMillis();
+			long possibilities = calculator.calculateMaxPossibilities();
+			long time = System.currentTimeMillis() - start;
+
+			System.out.println("══════════════════════════════════════════════");
+			System.out.println("Nombre maximal de façons de compléter la mosaïque : " + possibilities);
+			System.out.println("Temps de calcul : " + time + " ms");
+			System.out.println("══════════════════════════════════════════════");
+
+			// Affichage temporaire dans le titre de la fenêtre
+			window.setTitle(window.getDefaultTitle() + " | Possibilités : " + possibilities);
 		}
 		
 		if (window.getInput().hasReleased(Key.KEY_ESCAPE)) {
 			running = false;
 		}
 		
-		if (window.getInput().hasReleased(Key.KEY_ARROW_UP)) {
-			this.actual = Globals.BLUE_COLOR;
-		}
-		if (window.getInput().hasReleased(Key.KEY_ARROW_DOWN)) {
-			this.actual = Globals.RED_COLOR;
-		}
-		if (window.getInput().hasReleased(Key.KEY_ARROW_RIGHT)) {
-			this.actual = Globals.YELLOW_COLOR;
-		}
-		if (window.getInput().hasReleased(Key.KEY_ARROW_LEFT)) {
-			this.actual = Globals.GREEN_COLOR;
-		}
+		// Changement de couleur avec flèches
+		if (window.getInput().hasReleased(Key.KEY_ARROW_UP))    this.actual = Globals.BLUE_COLOR;
+		if (window.getInput().hasReleased(Key.KEY_ARROW_DOWN))  this.actual = Globals.RED_COLOR;
+		if (window.getInput().hasReleased(Key.KEY_ARROW_RIGHT)) this.actual = Globals.YELLOW_COLOR;
+		if (window.getInput().hasReleased(Key.KEY_ARROW_LEFT))  this.actual = Globals.GREEN_COLOR;
 	}
 	
 	private void start() throws PhotonException {
@@ -170,6 +186,7 @@ public class Mosaik {
 	private void render() throws PhotonException {
 		renderer.clear(Globals.BACK_COLOR);
 		
+		// Curseur
 		renderer.render(shader, cursorMesh, () -> {
 			shader.setUniform("projectionMatrix", MatrixUtils.createOrthoMatrix(window));
 			Vector3f position = new Vector3f(
@@ -181,6 +198,7 @@ public class Mosaik {
 			shader.setUniform("color", this.actual);
 		});
 		
+		// Bordures de la grille
 		List<Grid.Cell> cells = grid.getCells();
 		for (Grid.Cell cell : cells) {
 			for (Grid.Cell.Border border : cell.getDivision()) {
@@ -191,11 +209,7 @@ public class Mosaik {
 							border.getCell().getY() * (grid.getCellSize() + Grid.getCellSpacing()) - grid.getWorldHeight() / 2,
 							0f
 					);
-					Vector3f rotation = new Vector3f(
-							0,
-							0,
-							border.getId() * 90
-					);
+					Vector3f rotation = new Vector3f(0, 0, border.getId() * 90);
 					shader.setUniform("modelMatrix", MatrixUtils.createTransformationMatrix(new Transform(position, rotation).scale(grid.getCellSize())));
 					shader.setUniform("viewMatrix", MatrixUtils.create2DViewMatrix(camera));
 					shader.setUniform("color", border.getColor());
@@ -205,15 +219,14 @@ public class Mosaik {
 	}
 	
 	private Vector2f getMouseCameraPos() {
-		// Get mouse position in world space CONSIDERING CAMERA POSITION
 		Vector2f mousePos = window.getInput().getMouse().toWorldSpace(window);
 		mousePos.add(new Vector2f(camera.getPosition().x, camera.getPosition().y));
-		mousePos.add(new Vector2f((grid.getWorldWidth() + grid.getCellSize() + Grid.getCellSpacing()) / 2, (grid.getWorldHeight() + grid.getCellSize() + Grid.getCellSpacing()) / 2));
+		mousePos.add(new Vector2f((grid.getWorldWidth() + grid.getCellSize() + Grid.getCellSpacing()) / 2, 
+		                          (grid.getWorldHeight() + grid.getCellSize() + Grid.getCellSpacing()) / 2));
 		return mousePos;
 	}
 	
 	private Vector2f getMousePos() {
-		// Get mouse position in world space
 		Vector2f mousePos = window.getInput().getMouse().toWorldSpace(window);
 		mousePos.add(new Vector2f(camera.getPosition().x, camera.getPosition().y));
 		return mousePos;

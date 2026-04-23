@@ -210,11 +210,14 @@ public class Grid {
 		}
 
 		public boolean isNotValid(Border changed) {
-			return changed.isOActivated()
-					&& Arrays.stream(getDivision()).filter(border -> border.getId() != changed.getId())
-					.anyMatch(border -> border.getColor() == changed.getOColor());
+    		if (changed.isOActivated()) {
+        		return Arrays.stream(getDivision())
+                	.filter(border -> border.getId() != changed.getId())
+                	.anyMatch(border -> border.getColor().equals(changed.getOColor())); // Utilise .equals()
+    		}
+    	return false;
 		}
-		
+
 		@Getter
 		public static class Border {
 			private final Cell cell;
